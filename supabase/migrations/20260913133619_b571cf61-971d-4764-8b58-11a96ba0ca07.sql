@@ -1,0 +1,11 @@
+REVOKE ALL ON public.question_progress FROM authenticated;
+DROP POLICY "Visitors read own progress" ON public.question_progress;
+DROP POLICY "Visitors create own progress" ON public.question_progress;
+DROP POLICY "Visitors update own progress" ON public.question_progress;
+DROP POLICY "Visitors delete own progress" ON public.question_progress;
+REVOKE ALL ON FUNCTION public.available_question_counts() FROM authenticated;
+REVOKE ALL ON FUNCTION public.start_question_set(text, integer) FROM authenticated;
+REVOKE ALL ON FUNCTION public.answer_question(text, text) FROM authenticated;
+DROP FUNCTION public.available_question_counts();
+DROP FUNCTION public.start_question_set(text, integer);
+DROP FUNCTION public.answer_question(text, text);

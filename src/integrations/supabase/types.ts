@@ -14,7 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      question_progress: {
+        Row: {
+          created_at: string
+          question_id: string
+          state: Database["public"]["Enums"]["question_progress_state"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          question_id: string
+          state: Database["public"]["Enums"]["question_progress_state"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          question_id?: string
+          state?: Database["public"]["Enums"]["question_progress_state"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_progress_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["question_id"]
+          },
+        ]
+      }
+      questions: {
+        Row: {
+          category: string
+          correct_answer: string
+          created_at: string
+          detail: string
+          difficulty: string | null
+          id: number
+          option_a: string
+          option_b: string
+          option_c: string
+          option_d: string
+          question: string
+          question_id: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          correct_answer: string
+          created_at?: string
+          detail: string
+          difficulty?: string | null
+          id?: number
+          option_a: string
+          option_b: string
+          option_c: string
+          option_d: string
+          question: string
+          question_id: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          correct_answer?: string
+          created_at?: string
+          detail?: string
+          difficulty?: string | null
+          id?: number
+          option_a?: string
+          option_b?: string
+          option_c?: string
+          option_d?: string
+          question?: string
+          question_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +102,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      question_progress_state: "shown_unanswered" | "seen_answered"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +229,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      question_progress_state: ["shown_unanswered", "seen_answered"],
+    },
   },
 } as const
