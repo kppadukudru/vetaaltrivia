@@ -60,6 +60,7 @@ export type Database = {
           option_d: string
           question: string
           question_id: string
+          subcategory: string
           updated_at: string
         }
         Insert: {
@@ -75,6 +76,7 @@ export type Database = {
           option_d: string
           question: string
           question_id: string
+          subcategory: string
           updated_at?: string
         }
         Update: {
@@ -90,6 +92,7 @@ export type Database = {
           option_d?: string
           question?: string
           question_id?: string
+          subcategory?: string
           updated_at?: string
         }
         Relationships: []

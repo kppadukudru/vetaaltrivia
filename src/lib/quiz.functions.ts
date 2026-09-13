@@ -9,6 +9,7 @@ const answerSchema = z.enum(["A", "B", "C", "D"]);
 export type QuizQuestion = {
   questionId: string;
   category: string;
+  subcategory: string;
   question: string;
   options: Record<"A" | "B" | "C" | "D", string>;
 };
@@ -20,13 +21,13 @@ export type AnswerReveal = {
   detail: string;
 };
 
-export const getAvailableCounts = createServerFn({ method: "GET" })
+export const getCategoryCatalog = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const [{ data: questions, error: questionsError }, { data: progress, error: progressError }] =
       await Promise.all([
-        supabaseAdmin.from("questions").select("question_id, category"),
+        supabaseAdmin.from("questions").select("question_id, category, subcategory"),
         supabaseAdmin
           .from("question_progress")
           .select("question_id")
@@ -36,17 +37,28 @@ export const getAvailableCounts = createServerFn({ method: "GET" })
 
     if (questionsError || progressError) throw questionsError ?? progressError;
     const spent = new Set((progress ?? []).map((row) => row.question_id));
-    return ["Capitals", "Geography"].map((category) => ({
-      category,
-      availableCount: (questions ?? []).filter(
-        (question) => question.category === category && !spent.has(question.question_id),
-      ).length,
-    }));
+    return ["Capitals", "Geography"].map((category) => {
+      const categoryQuestions = (questions ?? []).filter((question) => question.category === category);
+      const subcategories = [...new Set(categoryQuestions.map((question) => question.subcategory))]
+        .sort((left, right) => left.localeCompare(right))
+        .map((subcategory) => ({
+          name: subcategory,
+          availableCount: categoryQuestions.filter(
+            (question) => question.subcategory === subcategory && !spent.has(question.question_id),
+          ).length,
+        }));
+
+      return {
+        category,
+        availableCount: subcategories.reduce((total, item) => total + item.availableCount, 0),
+        subcategories,
+      };
+    });
   });
 
 export const startQuestionSet = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((data) => z.object({ category: categorySchema }).parse(data))
+  .validator((data) => z.object({ category: categorySchema, subcategory: z.string().trim().min(1) }).parse(data))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: spentRows, error: spentError } = await supabaseAdmin
@@ -59,8 +71,9 @@ export const startQuestionSet = createServerFn({ method: "POST" })
     const spent = (spentRows ?? []).map((row) => row.question_id);
     let query = supabaseAdmin
       .from("questions")
-      .select("question_id, category, question, option_a, option_b, option_c, option_d")
-      .eq("category", data.category);
+      .select("question_id, category, subcategory, question, option_a, option_b, option_c, option_d")
+      .eq("category", data.category)
+      .eq("subcategory", data.subcategory);
     if (spent.length > 0) query = query.not("question_id", "in", `(${spent.join(",")})`);
     const { data: available, error } = await query;
     if (error) throw error;
@@ -84,6 +97,7 @@ export const startQuestionSet = createServerFn({ method: "POST" })
     return selected.map<QuizQuestion>((item) => ({
       questionId: item.question_id,
       category: item.category,
+      subcategory: item.subcategory,
       question: item.question,
       options: { A: item.option_a, B: item.option_b, C: item.option_c, D: item.option_d },
     }));
