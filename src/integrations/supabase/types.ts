@@ -99,35 +99,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      answer_question: {
-        Args: { answered_question_id: string; selected_answer: string }
-        Returns: {
-          correct_answer: string
-          correct_option: string
-          detail: string
-          is_correct: boolean
-        }[]
-      }
-      available_question_counts: {
-        Args: never
-        Returns: {
-          available_count: number
-          category: string
-        }[]
-      }
-      start_question_set: {
-        Args: { requested_category: string; set_size?: number }
-        Returns: {
-          category: string
-          difficulty: string
-          option_a: string
-          option_b: string
-          option_c: string
-          option_d: string
-          question: string
-          question_id: string
-        }[]
-      }
+      [_ in never]: never
     }
     Enums: {
       question_progress_state: "shown_unanswered" | "seen_answered"
