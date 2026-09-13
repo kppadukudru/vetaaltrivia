@@ -12,9 +12,9 @@ type RoundItem = { question: QuizQuestion; selected: Letter; reveal: AnswerRevea
 export const Route = createFileRoute("/play/$category/$subcategory")({
   head: ({ params }) => ({
     meta: [
-      { title: `${decodeURIComponent(params.category)} Quiz | Vetaal` },
-      { name: "description", content: `A calm, untimed ${decodeURIComponent(params.category)} quiz with an explanation after every answer.` },
-      { property: "og:title", content: `${decodeURIComponent(params.category)} Quiz | Vetaal` },
+      { title: `${decodeURIComponent(params.subcategory)} Quiz | Vetaal` },
+      { name: "description", content: `A calm, untimed ${decodeURIComponent(params.subcategory)} quiz with an explanation after every answer.` },
+      { property: "og:title", content: `${decodeURIComponent(params.subcategory)} Quiz | Vetaal` },
       { property: "og:description", content: "Learn something true with every question. No timer, no advertising, and no pressure." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -24,9 +24,9 @@ export const Route = createFileRoute("/play/$category/$subcategory")({
 });
 
 function PlayPage() {
-  const { category: encodedCategory } = Route.useParams();
+  const { category: encodedCategory, subcategory: encodedSubcategory } = Route.useParams();
   const category = decodeURIComponent(encodedCategory);
-  const navigate = useNavigate();
+  const subcategory = decodeURIComponent(encodedSubcategory);
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<Letter | null>(null);
@@ -42,7 +42,7 @@ function PlayPage() {
       if (!validCategory) { setStatus("error"); return; }
       try {
         await ensureAnonymousSession();
-        const set = await startQuestionSet({ data: { category } });
+        const set = await startQuestionSet({ data: { category, subcategory } });
         if (!active) return;
         setQuestions(set);
         setStatus(set.length ? "playing" : "empty");
@@ -50,7 +50,7 @@ function PlayPage() {
     }
     begin();
     return () => { active = false; };
-  }, [category, validCategory]);
+  }, [category, subcategory, validCategory]);
 
   const question = questions[index];
   const total = questions.length;
@@ -63,7 +63,7 @@ function PlayPage() {
     setReveal(null);
     setRound([]);
     try {
-      const set = await startQuestionSet({ data: { category } });
+      const set = await startQuestionSet({ data: { category, subcategory } });
       setQuestions(set);
       setStatus(set.length ? "playing" : "empty");
     } catch {
@@ -91,7 +91,7 @@ function PlayPage() {
 
   if (status === "loading") return <StatePage title="Gathering your questions" text="The next set is taking shape." />;
   if (status === "error") return <StatePage title="The trail went quiet" text="This set could not begin. Please return home and try once more." />;
-  if (status === "empty") return <StatePage title={`${category} is complete`} text="You have answered every available question in this category." />;
+  if (status === "empty") return <StatePage title={`${subcategory} is complete`} text="You have answered every available question in this subject." />;
 
   if (status === "summary") {
     const correct = round.filter((item) => item.reveal.isCorrect).length;
@@ -114,7 +114,7 @@ function PlayPage() {
           <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Button asChild size="lg"><Link to="/"><House /> Home</Link></Button>
             <Button asChild variant="outline" size="lg"><Link to="/"><Layers3 /> Another category</Link></Button>
-            <Button variant="ghost" size="lg" onClick={restart}><RotateCcw /> Fresh {category} set</Button>
+            <Button variant="ghost" size="lg" onClick={restart}><RotateCcw /> Fresh {subcategory} set</Button>
           </div>
         </section>
       </main>
@@ -126,7 +126,7 @@ function PlayPage() {
     <main className="page-shell py-8 sm:py-14">
       <section className="mx-auto max-w-3xl">
         <div className="flex items-center justify-between gap-4 text-sm text-muted-foreground">
-          <span>{category}</span><span>Question {index + 1} of {total}</span>
+          <span>{subcategory}</span><span>Question {index + 1} of {total}</span>
         </div>
         {total < 10 && index === 0 && <p className="set-note">Only {total} {total === 1 ? "question is" : "questions are"} available in this set.</p>}
         <div className="progress-track" aria-label={`Question ${index + 1} of ${total}`}><span style={{ width: `${((index + 1) / total) * 100}%` }} /></div>

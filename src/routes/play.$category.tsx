@@ -42,9 +42,14 @@ function CategoryPage() {
           return;
         }
         if (match.subcategories.length === 1) {
+          const onlySubcategory = match.subcategories[0];
+          if (!onlySubcategory) {
+            setStatus("error");
+            return;
+          }
           await navigate({
             to: "/play/$category/$subcategory",
-            params: { category, subcategory: match.subcategories[0].name },
+            params: { category, subcategory: onlySubcategory.name },
             replace: true,
           });
           return;
