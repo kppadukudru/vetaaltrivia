@@ -50,7 +50,7 @@ function Index() {
             <p className="mt-5 max-w-2xl font-display text-2xl leading-relaxed text-muted-foreground sm:text-3xl">Learn something true with every question.</p>
             <p className="mt-6 max-w-xl leading-7 text-muted-foreground">Choose a subject. Take your time. Once you answer, Vetaal will tell you what is right and why it is worth knowing.</p>
           </div>
-          <img src={spirit} alt="A small owl-like spirit resting in a crescent moon" className="mx-auto w-56 opacity-90 sm:w-64 lg:w-80" />
+          <img src={spirit} alt="A small owl-like spirit resting in a crescent moon" width={1024} height={1024} className="mx-auto w-56 opacity-90 sm:w-64 lg:w-80" />
         </div>
       </section>
       <section className="border-t border-border/70 bg-surface-subtle">
