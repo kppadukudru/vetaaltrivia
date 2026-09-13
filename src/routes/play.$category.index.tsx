@@ -8,7 +8,7 @@ import { getCategoryCatalog } from "@/lib/quiz.functions";
 
 type Subcategory = { name: string; availableCount: number };
 
-export const Route = createFileRoute("/play/$category")({
+export const Route = createFileRoute("/play/$category/")({
   head: ({ params }) => ({
     meta: [
       { title: `${decodeURIComponent(params.category)} | Vetaal` },
