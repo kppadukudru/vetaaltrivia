@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import spirit from "@/assets/vetaal-spirit.png";
 import { Button } from "@/components/ui/button";
 import { ensureAnonymousSession } from "@/lib/anonymous-session";
-import { getAvailableCounts } from "@/lib/quiz.functions";
+import { getCategoryCatalog } from "@/lib/quiz.functions";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -29,7 +29,7 @@ function Index() {
   useEffect(() => {
     let active = true;
     ensureAnonymousSession()
-      .then(() => getAvailableCounts())
+      .then(() => getCategoryCatalog())
       .then((result) => { if (active) setCounts(Object.fromEntries(result.map((item) => [item.category, item.availableCount]))); })
       .finally(() => { if (active) setReady(true); });
     return () => { active = false; };
