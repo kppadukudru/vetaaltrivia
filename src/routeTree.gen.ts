@@ -12,7 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as PrivacyRouteImport } from './routes/privacy'
-import { Route as PlayCategoryRouteImport } from './routes/play.$category'
+import { Route as PlayCategorySubcategoryRouteImport } from './routes/play.$category.$subcategory'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -29,9 +29,9 @@ const PrivacyRoute = PrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PlayCategoryRoute = PlayCategoryRouteImport.update({
-  id: '/play/$category',
-  path: '/play/$category',
+const PlayCategorySubcategoryRoute = PlayCategorySubcategoryRouteImport.update({
+  id: '/play/$category/$subcategory',
+  path: '/play/$category/$subcategory',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -39,34 +39,34 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/privacy': typeof PrivacyRoute
-  '/play/$category': typeof PlayCategoryRoute
+  '/play/$category/$subcategory': typeof PlayCategorySubcategoryRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/privacy': typeof PrivacyRoute
-  '/play/$category': typeof PlayCategoryRoute
+  '/play/$category/$subcategory': typeof PlayCategorySubcategoryRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/privacy': typeof PrivacyRoute
-  '/play/$category': typeof PlayCategoryRoute
+  '/play/$category/$subcategory': typeof PlayCategorySubcategoryRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/privacy' | '/play/$category'
+  fullPaths: '/' | '/about' | '/privacy' | '/play/$category/$subcategory'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/privacy' | '/play/$category'
-  id: '__root__' | '/' | '/about' | '/privacy' | '/play/$category'
+  to: '/' | '/about' | '/privacy' | '/play/$category/$subcategory'
+  id: '__root__' | '/' | '/about' | '/privacy' | '/play/$category/$subcategory'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   PrivacyRoute: typeof PrivacyRoute
-  PlayCategoryRoute: typeof PlayCategoryRoute
+  PlayCategorySubcategoryRoute: typeof PlayCategorySubcategoryRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -92,11 +92,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/play/$category': {
-      id: '/play/$category'
-      path: '/play/$category'
-      fullPath: '/play/$category'
-      preLoaderRoute: typeof PlayCategoryRouteImport
+    '/play/$category/$subcategory': {
+      id: '/play/$category/$subcategory'
+      path: '/play/$category/$subcategory'
+      fullPath: '/play/$category/$subcategory'
+      preLoaderRoute: typeof PlayCategorySubcategoryRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -106,7 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   PrivacyRoute: PrivacyRoute,
-  PlayCategoryRoute: PlayCategoryRoute,
+  PlayCategorySubcategoryRoute: PlayCategorySubcategoryRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

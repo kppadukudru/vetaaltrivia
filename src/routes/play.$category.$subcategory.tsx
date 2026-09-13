@@ -9,7 +9,7 @@ import { answerQuestion, startQuestionSet, type AnswerReveal, type QuizQuestion 
 type Letter = "A" | "B" | "C" | "D";
 type RoundItem = { question: QuizQuestion; selected: Letter; reveal: AnswerReveal };
 
-export const Route = createFileRoute("/play/$category")({
+export const Route = createFileRoute("/play/$category/$subcategory")({
   head: ({ params }) => ({
     meta: [
       { title: `${decodeURIComponent(params.category)} Quiz | Vetaal` },
