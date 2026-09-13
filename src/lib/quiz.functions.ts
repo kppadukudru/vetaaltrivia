@@ -46,7 +46,7 @@ export const getAvailableCounts = createServerFn({ method: "GET" })
 
 export const startQuestionSet = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.object({ category: categorySchema }).parse(data))
+  .validator((data) => z.object({ category: categorySchema }).parse(data))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: spentRows, error: spentError } = await supabaseAdmin
@@ -91,7 +91,7 @@ export const startQuestionSet = createServerFn({ method: "POST" })
 
 export const answerQuestion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) =>
+  .validator((data) =>
     z.object({ questionId: z.string().min(1), selectedAnswer: answerSchema }).parse(data),
   )
   .handler(async ({ data, context }) => {

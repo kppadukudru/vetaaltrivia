@@ -55,6 +55,22 @@ function PlayPage() {
   const question = questions[index];
   const total = questions.length;
 
+  async function restart() {
+    setStatus("loading");
+    setQuestions([]);
+    setIndex(0);
+    setSelected(null);
+    setReveal(null);
+    setRound([]);
+    try {
+      const set = await startQuestionSet({ data: { category } });
+      setQuestions(set);
+      setStatus(set.length ? "playing" : "empty");
+    } catch {
+      setStatus("error");
+    }
+  }
+
   async function choose(letter: Letter) {
     if (!question || selected || submitting) return;
     setSubmitting(true);
@@ -98,7 +114,7 @@ function PlayPage() {
           <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Button asChild size="lg"><Link to="/"><House /> Home</Link></Button>
             <Button asChild variant="outline" size="lg"><Link to="/"><Layers3 /> Another category</Link></Button>
-            <Button variant="ghost" size="lg" onClick={() => navigate({ to: "/play/$category", params: { category }, replace: true })}><RotateCcw /> Fresh {category} set</Button>
+            <Button variant="ghost" size="lg" onClick={restart}><RotateCcw /> Fresh {category} set</Button>
           </div>
         </section>
       </main>
