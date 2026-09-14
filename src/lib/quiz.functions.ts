@@ -59,6 +59,17 @@ export const startQuestionSet = createServerFn({ method: "POST" })
     if (error) throw error;
 
     const rows = selected ?? [];
+    if (rows.length === 0) {
+      // Nothing left to ask, so confirm the subject exists before reporting it complete.
+      const { count, error: countError } = await supabaseAdmin
+        .from("questions")
+        .select("question_id", { count: "exact", head: true })
+        .eq("category", data.category)
+        .eq("subcategory", data.subcategory);
+      if (countError) throw countError;
+      if (!count) throw new Error("This subject could not be found.");
+    }
+
     if (rows.length > 0) {
       const { error: markError } = await supabaseAdmin.from("question_progress").upsert(
         rows.map((question) => ({
