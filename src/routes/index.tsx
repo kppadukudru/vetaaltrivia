@@ -70,7 +70,7 @@ function Index() {
                   <div className="category-icon"><Icon /></div>
                   <div className="min-w-0"><h3 className="font-display text-2xl">{name}</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">{note}</p><p className="mt-5 flex h-4 items-center font-mono text-xs uppercase text-muted-foreground">{ready ? `${available ?? 0} available` : "Checking your progress"}</p></div>
                   <Button asChild={!disabled} variant="ghost" size="icon" disabled={disabled} aria-label={`Start ${name}`}>
-                    {disabled ? <ArrowRight /> : <Link to="/play/$category" params={{ category: name }}><ArrowRight /></Link>}
+                    {disabled ? <ArrowRight /> : <Link to="/play/$category" params={{ category: name }} preload="intent"><ArrowRight /></Link>}
                   </Button>
                 </article>
               );
