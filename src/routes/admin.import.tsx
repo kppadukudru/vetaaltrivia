@@ -236,7 +236,7 @@ function ImportWorkspace({ onSignedOut }: { onSignedOut: () => void }) {
 
         <section className="py-8" aria-labelledby="choose-file-title">
           <h2 id="choose-file-title" className="font-display text-2xl">Choose a CSV file</h2>
-          <p className="mt-2 max-w-2xl leading-7 text-muted-foreground">The file may contain up to 5,000 rows and must be no larger than 5 MB.</p>
+          <p className="mt-2 max-w-2xl leading-7 text-muted-foreground">Columns may appear in any order and may be separated by commas or semicolons. Extra columns are ignored. The file may contain up to 5,000 rows and must be no larger than 5 MB.</p>
 
           <fieldset className="mt-6">
             <legend className="font-display text-lg">How should existing identifiers be treated?</legend>
