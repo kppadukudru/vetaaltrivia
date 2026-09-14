@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { FileText, LogIn, LogOut, Upload } from "lucide-react";
 import Papa from "papaparse";
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
@@ -218,7 +218,10 @@ function ImportWorkspace({ onSignedOut }: { onSignedOut: () => void }) {
       <div className="mx-auto max-w-4xl">
         <div className="flex flex-col gap-5 border-b border-border pb-7 sm:flex-row sm:items-end sm:justify-between">
           <div><p className="eyebrow">Vetaal administration</p><h1 className="mt-3 font-display text-4xl">Import questions</h1></div>
-          <Button variant="ghost" onClick={signOut}><LogOut /> Sign out</Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" asChild><Link to="/admin">Administration</Link></Button>
+            <Button variant="ghost" onClick={signOut}><LogOut /> Sign out</Button>
+          </div>
         </div>
 
         <section className="py-8" aria-labelledby="choose-file-title">
