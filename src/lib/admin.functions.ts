@@ -66,6 +66,57 @@ export const getAdminAccess = createServerFn({ method: "GET" })
     return { allowed: true };
   });
 
+const firstAdminSchema = z.object({
+  email: z.string().trim().email("Enter a valid email address."),
+  password: z.string().min(10, "Choose a password of at least ten characters."),
+});
+
+export const adminExists = createServerFn({ method: "GET" }).handler(async () => {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { count, error } = await supabaseAdmin
+    .from("user_roles")
+    .select("user_id", { count: "exact", head: true })
+    .eq("role", "admin");
+
+  if (error) throw new Error("The administrator status could not be read.");
+  return { exists: (count ?? 0) > 0 };
+});
+
+export const claimFirstAdmin = createServerFn({ method: "POST" })
+  .validator((input) => firstAdminSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { count, error: countError } = await supabaseAdmin
+      .from("user_roles")
+      .select("user_id", { count: "exact", head: true })
+      .eq("role", "admin");
+
+    if (countError) throw new Error("The administrator status could not be read.");
+    if ((count ?? 0) > 0) throw new Error("An administrator already exists for this site.");
+
+    const { data: created, error: createError } = await supabaseAdmin.auth.admin.createUser({
+      email: data.email,
+      password: data.password,
+      email_confirm: true,
+    });
+
+    if (createError || !created.user) {
+      throw new Error("The administrator account could not be created. Try a different email address.");
+    }
+
+    const { error: roleError } = await supabaseAdmin
+      .from("user_roles")
+      .insert({ user_id: created.user.id, role: "admin" });
+
+    if (roleError) {
+      await supabaseAdmin.auth.admin.deleteUser(created.user.id);
+      throw new Error("The administrator role could not be assigned.");
+    }
+
+    return { created: true };
+  });
+
 export const importQuestions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((input) => importPayloadSchema.parse(input))
