@@ -37,6 +37,7 @@ function PlayPage() {
   const [status, setStatus] = useState<"loading" | "playing" | "summary" | "empty" | "error">("loading");
   const [submitting, setSubmitting] = useState(false);
   const validCategory = category === "Capitals" || category === "Geography";
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     let active = true;
@@ -44,12 +45,6 @@ function PlayPage() {
       if (!validCategory) { setStatus("error"); return; }
       try {
         await ensureAnonymousSession();
-        const catalog = await getCategoryCatalog();
-        const categoryEntry = catalog.find((item) => item.category === category);
-        if (!categoryEntry?.subcategories.some((item) => item.name === subcategory)) {
-          if (active) setStatus("error");
-          return;
-        }
         const set = await startQuestionSet({ data: { category, subcategory } });
         if (!active) return;
         setQuestions(set);
