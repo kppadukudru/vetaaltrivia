@@ -136,6 +136,7 @@ function ImportWorkspace({ onSignedOut }: { onSignedOut: () => void }) {
   const [rows, setRows] = useState<QuestionImportRow[]>([]);
   const [fileError, setFileError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [mode, setMode] = useState<ImportMode>("add");
   const [result, setResult] = useState<ImportResult>();
 
   function clearSelection(clearResult = true) {
