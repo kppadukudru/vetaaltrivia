@@ -55,6 +55,10 @@ function PlayPage() {
     return () => { active = false; };
   }, [category, subcategory, validCategory]);
 
+  useEffect(() => () => {
+    void queryClient.invalidateQueries({ queryKey: catalogQueryKey });
+  }, [queryClient]);
+
   const question = questions[index];
   const total = questions.length;
 
