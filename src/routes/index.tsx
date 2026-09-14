@@ -45,7 +45,17 @@ function Index() {
             <p className="mt-5 max-w-2xl font-display text-2xl leading-relaxed text-muted-foreground sm:text-3xl">Learn something true with every question.</p>
             <p className="mt-6 max-w-xl leading-7 text-muted-foreground">Choose a subject. Take your time. Once you answer, Vetaal will tell you what is right and why it is worth knowing.</p>
           </div>
-          <img src={spirit} alt="A small owl-like spirit resting in a crescent moon" width={1024} height={1024} className="mx-auto w-56 opacity-90 sm:w-64 lg:w-80" />
+          <img
+            src={spirit640}
+            srcSet={`${spirit320} 320w, ${spirit640} 640w`}
+            sizes="(min-width: 1024px) 320px, 256px"
+            alt="A small owl-like spirit resting in a crescent moon"
+            width={1024}
+            height={1024}
+            fetchPriority="high"
+            decoding="async"
+            className="mx-auto w-56 opacity-90 sm:w-64 lg:w-80"
+          />
         </div>
       </section>
       <section className="border-t border-border/70 bg-surface-subtle">
@@ -58,7 +68,7 @@ function Index() {
               return (
                 <article className="category-card" key={name}>
                   <div className="category-icon"><Icon /></div>
-                  <div className="min-w-0"><h3 className="font-display text-2xl">{name}</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">{note}</p><p className="mt-5 font-mono text-xs uppercase text-muted-foreground">{ready ? `${available ?? 0} available` : "Checking your progress"}</p></div>
+                  <div className="min-w-0"><h3 className="font-display text-2xl">{name}</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">{note}</p><p className="mt-5 flex h-4 items-center font-mono text-xs uppercase text-muted-foreground">{ready ? `${available ?? 0} available` : "Checking your progress"}</p></div>
                   <Button asChild={!disabled} variant="ghost" size="icon" disabled={disabled} aria-label={`Start ${name}`}>
                     {disabled ? <ArrowRight /> : <Link to="/play/$category" params={{ category: name }}><ArrowRight /></Link>}
                   </Button>
