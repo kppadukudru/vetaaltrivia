@@ -228,7 +228,28 @@ function ImportWorkspace({ onSignedOut }: { onSignedOut: () => void }) {
 
         <section className="py-8" aria-labelledby="choose-file-title">
           <h2 id="choose-file-title" className="font-display text-2xl">Choose a CSV file</h2>
-          <p className="mt-2 max-w-2xl leading-7 text-muted-foreground">The file may contain up to 5,000 rows and must be no larger than 5 MB. Existing question identifiers will be left unchanged.</p>
+          <p className="mt-2 max-w-2xl leading-7 text-muted-foreground">The file may contain up to 5,000 rows and must be no larger than 5 MB.</p>
+
+          <fieldset className="mt-6">
+            <legend className="font-display text-lg">How should existing identifiers be treated?</legend>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              {([
+                { value: "add", title: "Add new questions only", text: "Identifiers already in the bank are left exactly as they are." },
+                { value: "rewrite", title: "Add and rewrite matching ones", text: "Identifiers already in the bank are replaced by the version in this file." },
+              ] as const).map((option) => (
+                <label key={option.value} className={`cursor-pointer rounded-md border bg-card p-4 transition-colors ${mode === option.value ? "border-primary" : "border-border hover:border-input"}`}>
+                  <span className="flex items-start gap-3">
+                    <input type="radio" name="import-mode" value={option.value} checked={mode === option.value} onChange={() => setMode(option.value)} className="mt-1 accent-primary" />
+                    <span>
+                      <span className="block font-medium">{option.title}</span>
+                      <span className="mt-1 block text-sm text-muted-foreground">{option.text}</span>
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </div>
+            {mode === "rewrite" ? <p className="mt-3 text-sm text-muted-foreground">A rewritten question becomes available again for players who had already answered it.</p> : null}
+          </fieldset>
           <label className="mt-6 flex min-h-40 cursor-pointer flex-col items-center justify-center rounded-md border border-dashed border-input bg-card px-6 text-center transition-colors hover:border-primary" htmlFor="question-csv">
             <FileText className="mb-3 size-7 text-primary" aria-hidden="true" />
             <span className="font-medium">{fileName || "Select a CSV file"}</span>
