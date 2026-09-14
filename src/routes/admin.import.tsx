@@ -13,7 +13,7 @@ import {
   type QuestionImportRow,
 } from "@/lib/admin.functions";
 
-const EXPECTED_HEADER = [
+const REQUIRED_HEADER = [
   "question_id",
   "category",
   "subcategory",
@@ -23,9 +23,10 @@ const EXPECTED_HEADER = [
   "option_c",
   "option_d",
   "correct_answer",
-  "difficulty",
   "detail",
 ] as const;
+
+const OPTIONAL_HEADER = ["difficulty"] as const;
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const MAX_ROWS = 5000;
