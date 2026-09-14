@@ -86,7 +86,11 @@ function PlayPage() {
   }
 
   function next() {
-    if (index + 1 >= total) { setStatus("summary"); return; }
+    if (index + 1 >= total) {
+      setStatus("summary");
+      void queryClient.invalidateQueries({ queryKey: catalogQueryKey });
+      return;
+    }
     setIndex((value) => value + 1);
     setSelected(null);
     setReveal(null);
