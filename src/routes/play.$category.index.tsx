@@ -62,7 +62,7 @@ function CategoryPage() {
                   <p className="mt-4 font-mono text-xs uppercase text-muted-foreground">{subcategory.availableCount} available</p>
                 </div>
                 <Button asChild={!disabled} variant="ghost" size="icon" disabled={disabled} aria-label={`Start ${subcategory.name}`}>
-                  {disabled ? <ArrowRight /> : <Link to="/play/$category/$subcategory" params={{ category, subcategory: subcategory.name }}><ArrowRight /></Link>}
+                  {disabled ? <ArrowRight /> : <Link to="/play/$category/$subcategory" params={{ category, subcategory: subcategory.name }} preload="intent"><ArrowRight /></Link>}
                 </Button>
               </article>
             );
