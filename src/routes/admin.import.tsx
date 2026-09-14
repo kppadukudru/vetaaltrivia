@@ -13,7 +13,7 @@ import {
   type QuestionImportRow,
 } from "@/lib/admin.functions";
 
-const EXPECTED_HEADER = [
+const REQUIRED_HEADER = [
   "question_id",
   "category",
   "subcategory",
@@ -23,9 +23,10 @@ const EXPECTED_HEADER = [
   "option_c",
   "option_d",
   "correct_answer",
-  "difficulty",
   "detail",
 ] as const;
+
+const OPTIONAL_HEADER = ["difficulty"] as const;
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const MAX_ROWS = 5000;
@@ -162,35 +163,42 @@ function ImportWorkspace({ onSignedOut }: { onSignedOut: () => void }) {
 
     Papa.parse<string[]>(file, {
       skipEmptyLines: "greedy",
+      delimiter: "",
       complete: ({ data, errors }) => {
-        if (errors.length > 0) {
-          setFileError(`The CSV could not be read. ${errors[0]?.message ?? "Check its formatting."}`);
+        const fatal = errors.filter((item) => item.type === "Delimiter" || item.type === "Quotes");
+        if (fatal.length > 0) {
+          setFileError(`The CSV could not be read. ${fatal[0]?.message ?? "Check its formatting."}`);
           return;
         }
         const [header = [], ...body] = data;
-        const differences = EXPECTED_HEADER.flatMap((name, index) => header[index] === name ? [] : [`column ${index + 1} must be ${name}`]);
-        if (header.length !== EXPECTED_HEADER.length) differences.push(`the file has ${header.length} columns instead of ${EXPECTED_HEADER.length}`);
-        if (differences.length > 0) {
-          setFileError(`The header is not correct: ${differences.join("; ")}.`);
+        const names = header.map((name) => (name ?? "").trim().toLowerCase());
+        const indexOf = new Map(names.map((name, index) => [name, index] as const));
+        const missing = REQUIRED_HEADER.filter((name) => !indexOf.has(name));
+        if (missing.length > 0) {
+          setFileError(`The header is missing these columns: ${missing.join(", ")}.`);
           return;
         }
         if (body.length > MAX_ROWS) {
           setFileError("The file contains more than 5,000 rows.");
           return;
         }
+        const valueOf = (cells: string[], name: string) => {
+          const index = indexOf.get(name);
+          return index === undefined ? "" : (cells[index] ?? "");
+        };
         setRows(body.map((cells, index) => ({
           rowNumber: index + 2,
-          question_id: cells[0] ?? "",
-          category: cells[1] ?? "",
-          subcategory: cells[2] ?? "",
-          question: cells[3] ?? "",
-          option_a: cells[4] ?? "",
-          option_b: cells[5] ?? "",
-          option_c: cells[6] ?? "",
-          option_d: cells[7] ?? "",
-          correct_answer: (cells[8] ?? "") as QuestionImportRow["correct_answer"],
-          difficulty: cells[9] ?? "",
-          detail: cells[10] ?? "",
+          question_id: valueOf(cells, "question_id"),
+          category: valueOf(cells, "category"),
+          subcategory: valueOf(cells, "subcategory"),
+          question: valueOf(cells, "question"),
+          option_a: valueOf(cells, "option_a"),
+          option_b: valueOf(cells, "option_b"),
+          option_c: valueOf(cells, "option_c"),
+          option_d: valueOf(cells, "option_d"),
+          correct_answer: valueOf(cells, "correct_answer").trim().toUpperCase() as QuestionImportRow["correct_answer"],
+          difficulty: valueOf(cells, OPTIONAL_HEADER[0]),
+          detail: valueOf(cells, "detail"),
         })));
       },
       error: () => setFileError("The CSV file could not be read."),
@@ -228,7 +236,7 @@ function ImportWorkspace({ onSignedOut }: { onSignedOut: () => void }) {
 
         <section className="py-8" aria-labelledby="choose-file-title">
           <h2 id="choose-file-title" className="font-display text-2xl">Choose a CSV file</h2>
-          <p className="mt-2 max-w-2xl leading-7 text-muted-foreground">The file may contain up to 5,000 rows and must be no larger than 5 MB.</p>
+          <p className="mt-2 max-w-2xl leading-7 text-muted-foreground">Columns may appear in any order and may be separated by commas or semicolons. Extra columns are ignored. The file may contain up to 5,000 rows and must be no larger than 5 MB.</p>
 
           <fieldset className="mt-6">
             <legend className="font-display text-lg">How should existing identifiers be treated?</legend>
