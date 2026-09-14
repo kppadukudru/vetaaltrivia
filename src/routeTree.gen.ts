@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as AdminImportRouteImport } from './routes/admin.import'
 import { Route as PlayCategoryRouteImport } from './routes/play.$category'
 import { Route as PlayCategoryIndexRouteImport } from './routes/play.$category.index'
 import { Route as PlayCategorySubcategoryRouteImport } from './routes/play.$category.$subcategory'
@@ -29,6 +30,11 @@ const AboutRoute = AboutRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminImportRoute = AdminImportRouteImport.update({
+  id: '/admin/import',
+  path: '/admin/import',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlayCategoryRoute = PlayCategoryRouteImport.update({
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/privacy': typeof PrivacyRoute
+  '/admin/import': typeof AdminImportRoute
   '/play/$category': typeof PlayCategoryRouteWithChildren
   '/play/$category/$subcategory': typeof PlayCategorySubcategoryRoute
   '/play/$category/': typeof PlayCategoryIndexRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/privacy': typeof PrivacyRoute
+  '/admin/import': typeof AdminImportRoute
   '/play/$category/$subcategory': typeof PlayCategorySubcategoryRoute
   '/play/$category': typeof PlayCategoryIndexRoute
 }
@@ -67,6 +75,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/privacy': typeof PrivacyRoute
+  '/admin/import': typeof AdminImportRoute
   '/play/$category': typeof PlayCategoryRouteWithChildren
   '/play/$category/$subcategory': typeof PlayCategorySubcategoryRoute
   '/play/$category/': typeof PlayCategoryIndexRoute
@@ -77,6 +86,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/privacy'
+    | '/admin/import'
     | '/play/$category'
     | '/play/$category/$subcategory'
     | '/play/$category/'
@@ -85,6 +95,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/privacy'
+    | '/admin/import'
     | '/play/$category/$subcategory'
     | '/play/$category'
   id:
@@ -92,6 +103,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/privacy'
+    | '/admin/import'
     | '/play/$category'
     | '/play/$category/$subcategory'
     | '/play/$category/'
@@ -101,6 +113,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   PrivacyRoute: typeof PrivacyRoute
+  AdminImportRoute: typeof AdminImportRoute
   PlayCategoryRoute: typeof PlayCategoryRouteWithChildren
 }
 
@@ -125,6 +138,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/import': {
+      id: '/admin/import'
+      path: '/admin/import'
+      fullPath: '/admin/import'
+      preLoaderRoute: typeof AdminImportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/play/$category': {
@@ -169,6 +189,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   PrivacyRoute: PrivacyRoute,
+  AdminImportRoute: AdminImportRoute,
   PlayCategoryRoute: PlayCategoryRouteWithChildren,
 }
 export const routeTree = rootRouteImport
