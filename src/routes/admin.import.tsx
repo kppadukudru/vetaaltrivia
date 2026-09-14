@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { FileText, LogIn, LogOut, Upload } from "lucide-react";
 import Papa from "papaparse";
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
