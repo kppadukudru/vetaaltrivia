@@ -171,11 +171,13 @@ export const importQuestions = createServerFn({ method: "POST" })
         difficulty: row.difficulty.trim() || null,
       }));
 
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
     if (data.mode === "rewrite") {
       const existingIds = new Set<string>();
       const allIds = candidates.map((row) => row.question_id);
       for (let index = 0; index < allIds.length; index += 500) {
-        const { data: found, error } = await context.supabase
+        const { data: found, error } = await supabaseAdmin
           .from("questions")
           .select("question_id")
           .in("question_id", allIds.slice(index, index + 500));
@@ -184,7 +186,7 @@ export const importQuestions = createServerFn({ method: "POST" })
       }
 
       for (let index = 0; index < candidates.length; index += 500) {
-        const { error } = await context.supabase
+        const { error } = await supabaseAdmin
           .from("questions")
           .upsert(payloadFor(candidates.slice(index, index + 500)), {
             onConflict: "question_id",
