@@ -3,7 +3,8 @@ import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Globe2, Landmark, LockKeyhole } from "lucide-react";
 
-import spirit from "@/assets/vetaal-spirit.png";
+import spirit320 from "@/assets/vetaal-spirit-320.webp";
+import spirit640 from "@/assets/vetaal-spirit-640.webp";
 import { Button } from "@/components/ui/button";
 import { catalogQueryOptions } from "@/lib/quiz-queries";
 
@@ -16,6 +17,9 @@ export const Route = createFileRoute("/")({
       { property: "og:description", content: "One careful question at a time, followed by an answer worth keeping." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+    ],
+    links: [
+      { rel: "preload", as: "image", href: spirit640, imageSrcSet: `${spirit320} 320w, ${spirit640} 640w`, imageSizes: "(min-width: 1024px) 320px, 256px", fetchpriority: "high" },
     ],
   }),
   component: Index,
