@@ -277,11 +277,19 @@ function ImportSummary({ result }: { result: ImportResult }) {
       <p className="eyebrow">Upload complete</p>
       <h2 id="import-summary-title" className="mt-3 font-display text-3xl">Import summary</h2>
       <dl className="mt-6 grid gap-px overflow-hidden rounded-md border border-border bg-border sm:grid-cols-3">
-        {[["Added", result.added], ["Skipped as duplicates", result.skipped], ["Rejected as invalid", result.rejected.length]].map(([label, value]) => (
+        {[
+          ["Added", result.added] as const,
+          result.mode === "rewrite"
+            ? (["Rewritten", result.rewritten] as const)
+            : (["Skipped as duplicates", result.skipped] as const),
+          ["Rejected as invalid", result.rejected.length] as const,
+        ].map(([label, value]) => (
           <div key={label} className="bg-card p-5"><dt className="text-sm text-muted-foreground">{label}</dt><dd className="mt-1 font-display text-3xl">{value}</dd></div>
         ))}
       </dl>
-      {result.duplicateIds.length > 0 ? <div className="mt-8"><h3 className="font-display text-xl">Skipped identifiers</h3><ul className="mt-3 grid gap-2 font-mono text-sm sm:grid-cols-2">{result.duplicateIds.map((id) => <li key={id} className="rounded-md border border-border bg-card px-3 py-2">{id}</li>)}</ul></div> : null}
+      {result.mode === "rewrite" && result.skipped > 0 ? <p className="mt-4 text-sm text-muted-foreground">{result.skipped.toLocaleString()} rows repeated an identifier already used earlier in the same file, so only the first of each was written.</p> : null}
+      {result.rewrittenIds.length > 0 ? <div className="mt-8"><h3 className="font-display text-xl">Rewritten identifiers</h3><ul className="mt-3 grid gap-2 font-mono text-sm sm:grid-cols-2">{result.rewrittenIds.map((id) => <li key={id} className="rounded-md border border-border bg-card px-3 py-2">{id}</li>)}</ul></div> : null}
+      {result.duplicateIds.length > 0 ? <div className="mt-8"><h3 className="font-display text-xl">{result.mode === "rewrite" ? "Repeated identifiers" : "Skipped identifiers"}</h3><ul className="mt-3 grid gap-2 font-mono text-sm sm:grid-cols-2">{result.duplicateIds.map((id) => <li key={id} className="rounded-md border border-border bg-card px-3 py-2">{id}</li>)}</ul></div> : null}
       {result.rejected.length > 0 ? <div className="mt-8"><h3 className="font-display text-xl">Rejected rows</h3><ol className="mt-3 space-y-2">{result.rejected.map((item, index) => <li key={`${item.rowNumber}-${index}`} className="rounded-md border border-border bg-card px-4 py-3"><strong>Row {item.rowNumber || "unknown"}</strong><p className="mt-1 text-sm text-muted-foreground">{item.reasons.join("; ")}</p></li>)}</ol></div> : null}
     </section>
   );
