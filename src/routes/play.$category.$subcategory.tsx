@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Check, House, Layers3, RotateCcw, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ensureAnonymousSession } from "@/lib/anonymous-session";
-import { answerQuestion, getCategoryCatalog, startQuestionSet, type AnswerReveal, type QuizQuestion } from "@/lib/quiz.functions";
+import { catalogQueryKey } from "@/lib/quiz-queries";
+import { answerQuestion, startQuestionSet, type AnswerReveal, type QuizQuestion } from "@/lib/quiz.functions";
 
 type Letter = "A" | "B" | "C" | "D";
 type RoundItem = { question: QuizQuestion; selected: Letter; reveal: AnswerReveal };
@@ -35,6 +37,7 @@ function PlayPage() {
   const [status, setStatus] = useState<"loading" | "playing" | "summary" | "empty" | "error">("loading");
   const [submitting, setSubmitting] = useState(false);
   const validCategory = category === "Capitals" || category === "Geography";
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     let active = true;
@@ -42,12 +45,6 @@ function PlayPage() {
       if (!validCategory) { setStatus("error"); return; }
       try {
         await ensureAnonymousSession();
-        const catalog = await getCategoryCatalog();
-        const categoryEntry = catalog.find((item) => item.category === category);
-        if (!categoryEntry?.subcategories.some((item) => item.name === subcategory)) {
-          if (active) setStatus("error");
-          return;
-        }
         const set = await startQuestionSet({ data: { category, subcategory } });
         if (!active) return;
         setQuestions(set);
@@ -57,6 +54,10 @@ function PlayPage() {
     begin();
     return () => { active = false; };
   }, [category, subcategory, validCategory]);
+
+  useEffect(() => () => {
+    void queryClient.invalidateQueries({ queryKey: catalogQueryKey });
+  }, [queryClient]);
 
   const question = questions[index];
   const total = questions.length;
@@ -89,7 +90,11 @@ function PlayPage() {
   }
 
   function next() {
-    if (index + 1 >= total) { setStatus("summary"); return; }
+    if (index + 1 >= total) {
+      setStatus("summary");
+      void queryClient.invalidateQueries({ queryKey: catalogQueryKey });
+      return;
+    }
     setIndex((value) => value + 1);
     setSelected(null);
     setReveal(null);

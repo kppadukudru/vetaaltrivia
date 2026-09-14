@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SiteHeader } from "@/components/site-header";
+import { ensureAnonymousSession } from "@/lib/anonymous-session";
 
 function NotFoundComponent() {
   return (
@@ -119,6 +120,12 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    // Start the private session as soon as the app boots so the first screen never waits on it.
+    void ensureAnonymousSession().catch(() => undefined);
+  }, []);
+
 
   return (
     <QueryClientProvider client={queryClient}>

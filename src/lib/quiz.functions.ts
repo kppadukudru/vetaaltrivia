@@ -25,28 +25,17 @@ export const getCategoryCatalog = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const [{ data: questions, error: questionsError }, { data: progress, error: progressError }] =
-      await Promise.all([
-        supabaseAdmin.from("questions").select("question_id, category, subcategory"),
-        supabaseAdmin
-          .from("question_progress")
-          .select("question_id")
-          .eq("user_id", context.userId)
-          .eq("state", "seen_answered"),
-      ]);
+    const { data, error } = await supabaseAdmin.rpc("category_catalog", {
+      _user_id: context.userId,
+    });
+    if (error) throw error;
 
-    if (questionsError || progressError) throw questionsError ?? progressError;
-    const spent = new Set((progress ?? []).map((row) => row.question_id));
+    const rows = data ?? [];
     return ["Capitals", "Geography"].map((category) => {
-      const categoryQuestions = (questions ?? []).filter((question) => question.category === category);
-      const subcategories = [...new Set(categoryQuestions.map((question) => question.subcategory))]
-        .sort((left, right) => left.localeCompare(right))
-        .map((subcategory) => ({
-          name: subcategory,
-          availableCount: categoryQuestions.filter(
-            (question) => question.subcategory === subcategory && !spent.has(question.question_id),
-          ).length,
-        }));
+      const subcategories = rows
+        .filter((row) => row.category === category)
+        .map((row) => ({ name: row.subcategory, availableCount: Number(row.available_count) }))
+        .sort((left, right) => left.name.localeCompare(right.name));
 
       return {
         category,
@@ -61,30 +50,29 @@ export const startQuestionSet = createServerFn({ method: "POST" })
   .validator((data) => z.object({ category: categorySchema, subcategory: z.string().trim().min(1) }).parse(data))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: spentRows, error: spentError } = await supabaseAdmin
-      .from("question_progress")
-      .select("question_id")
-      .eq("user_id", context.userId)
-      .eq("state", "seen_answered");
-    if (spentError) throw spentError;
-
-    const spent = (spentRows ?? []).map((row) => row.question_id);
-    let query = supabaseAdmin
-      .from("questions")
-      .select("question_id, category, subcategory, question, option_a, option_b, option_c, option_d")
-      .eq("category", data.category)
-      .eq("subcategory", data.subcategory);
-    if (spent.length > 0) query = query.not("question_id", "in", `(${spent.join(",")})`);
-    const { data: available, error } = await query;
+    const { data: selected, error } = await supabaseAdmin.rpc("pick_question_set", {
+      _user_id: context.userId,
+      _category: data.category,
+      _subcategory: data.subcategory,
+      _limit: 10,
+    });
     if (error) throw error;
 
-    const selected = [...(available ?? [])]
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 10);
+    const rows = selected ?? [];
+    if (rows.length === 0) {
+      // Nothing left to ask, so confirm the subject exists before reporting it complete.
+      const { count, error: countError } = await supabaseAdmin
+        .from("questions")
+        .select("question_id", { count: "exact", head: true })
+        .eq("category", data.category)
+        .eq("subcategory", data.subcategory);
+      if (countError) throw countError;
+      if (!count) throw new Error("This subject could not be found.");
+    }
 
-    if (selected.length > 0) {
+    if (rows.length > 0) {
       const { error: markError } = await supabaseAdmin.from("question_progress").upsert(
-        selected.map((question) => ({
+        rows.map((question) => ({
           user_id: context.userId,
           question_id: question.question_id,
           state: "shown_unanswered" as const,
@@ -94,7 +82,7 @@ export const startQuestionSet = createServerFn({ method: "POST" })
       if (markError) throw markError;
     }
 
-    return selected.map<QuizQuestion>((item) => ({
+    return rows.map<QuizQuestion>((item) => ({
       questionId: item.question_id,
       category: item.category,
       subcategory: item.subcategory,

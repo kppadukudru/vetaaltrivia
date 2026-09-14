@@ -126,7 +126,32 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      category_catalog: {
+        Args: { _user_id: string }
+        Returns: {
+          available_count: number
+          category: string
+          subcategory: string
+        }[]
+      }
+      pick_question_set: {
+        Args: {
+          _category: string
+          _limit: number
+          _subcategory: string
+          _user_id: string
+        }
+        Returns: {
+          category: string
+          option_a: string
+          option_b: string
+          option_c: string
+          option_d: string
+          question: string
+          question_id: string
+          subcategory: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "user"
