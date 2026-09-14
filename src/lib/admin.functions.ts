@@ -24,9 +24,12 @@ const importRowSchema = z.object({
 
 const importPayloadSchema = z.object({
   rows: z.array(z.unknown()).max(5000),
+  mode: z.enum(["add", "rewrite"]).default("add"),
 });
 
 export type QuestionImportRow = z.infer<typeof importRowSchema>;
+
+export type ImportMode = "add" | "rewrite";
 
 export type ImportRejection = {
   rowNumber: number;
@@ -34,10 +37,13 @@ export type ImportRejection = {
 };
 
 export type ImportResult = {
+  mode: ImportMode;
   added: number;
   skipped: number;
+  rewritten: number;
   rejected: ImportRejection[];
   duplicateIds: string[];
+  rewrittenIds: string[];
 };
 
 async function requireAdministrator(
@@ -159,18 +165,65 @@ export const importQuestions = createServerFn({ method: "POST" })
     }
 
     const candidates = [...firstById.values()];
+    const payloadFor = (rows: QuestionImportRow[]) =>
+      rows.map(({ rowNumber: _rowNumber, ...row }) => ({
+        ...row,
+        difficulty: row.difficulty.trim() || null,
+      }));
+
+    if (data.mode === "rewrite") {
+      const existingIds = new Set<string>();
+      const allIds = candidates.map((row) => row.question_id);
+      for (let index = 0; index < allIds.length; index += 500) {
+        const { data: found, error } = await context.supabase
+          .from("questions")
+          .select("question_id")
+          .in("question_id", allIds.slice(index, index + 500));
+        if (error) throw new Error(`The questions could not be checked: ${error.message}`);
+        for (const row of found ?? []) existingIds.add(row.question_id);
+      }
+
+      for (let index = 0; index < candidates.length; index += 500) {
+        const { error } = await context.supabase
+          .from("questions")
+          .upsert(payloadFor(candidates.slice(index, index + 500)), {
+            onConflict: "question_id",
+            ignoreDuplicates: false,
+          });
+        if (error) throw new Error(`The questions could not be imported: ${error.message}`);
+      }
+
+      const rewrittenIds = [...existingIds].sort();
+      if (rewrittenIds.length > 0) {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        for (let index = 0; index < rewrittenIds.length; index += 500) {
+          const { error } = await supabaseAdmin
+            .from("question_progress")
+            .delete()
+            .in("question_id", rewrittenIds.slice(index, index + 500));
+          if (error) throw new Error(`The answered record could not be cleared: ${error.message}`);
+        }
+      }
+
+      return {
+        mode: "rewrite",
+        added: candidates.length - rewrittenIds.length,
+        skipped: fileDuplicateCount,
+        rewritten: rewrittenIds.length,
+        rejected,
+        duplicateIds: [...new Set(fileDuplicateIds)].sort(),
+        rewrittenIds,
+      } satisfies ImportResult;
+    }
+
     const addedIds = new Set<string>();
     for (let index = 0; index < candidates.length; index += 500) {
-      const chunk = candidates.slice(index, index + 500);
       const { data: inserted, error } = await context.supabase
         .from("questions")
-        .upsert(
-          chunk.map(({ rowNumber: _rowNumber, ...row }) => ({
-            ...row,
-            difficulty: row.difficulty.trim() || null,
-          })),
-          { onConflict: "question_id", ignoreDuplicates: true },
-        )
+        .upsert(payloadFor(candidates.slice(index, index + 500)), {
+          onConflict: "question_id",
+          ignoreDuplicates: true,
+        })
         .select("question_id");
 
       if (error) throw new Error(`The questions could not be imported: ${error.message}`);
@@ -183,9 +236,12 @@ export const importQuestions = createServerFn({ method: "POST" })
     const duplicateIds = [...new Set([...fileDuplicateIds, ...databaseDuplicateIds])].sort();
 
     return {
+      mode: "add",
       added: addedIds.size,
       skipped: fileDuplicateCount + databaseDuplicateIds.length,
+      rewritten: 0,
       rejected,
       duplicateIds,
+      rewrittenIds: [],
     } satisfies ImportResult;
   });

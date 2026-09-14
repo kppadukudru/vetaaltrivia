@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   getAdminAccess,
   importQuestions,
+  type ImportMode,
   type ImportResult,
   type QuestionImportRow,
 } from "@/lib/admin.functions";
@@ -136,6 +137,7 @@ function ImportWorkspace({ onSignedOut }: { onSignedOut: () => void }) {
   const [rows, setRows] = useState<QuestionImportRow[]>([]);
   const [fileError, setFileError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [mode, setMode] = useState<ImportMode>("add");
   const [result, setResult] = useState<ImportResult>();
 
   function clearSelection(clearResult = true) {
@@ -199,7 +201,7 @@ function ImportWorkspace({ onSignedOut }: { onSignedOut: () => void }) {
     setBusy(true);
     setFileError("");
     try {
-      setResult(await importQuestions({ data: { rows } }));
+      setResult(await importQuestions({ data: { rows, mode } }));
       clearSelection(false);
     } catch (error) {
       setFileError(error instanceof Error ? error.message : "The questions could not be imported.");
@@ -226,7 +228,28 @@ function ImportWorkspace({ onSignedOut }: { onSignedOut: () => void }) {
 
         <section className="py-8" aria-labelledby="choose-file-title">
           <h2 id="choose-file-title" className="font-display text-2xl">Choose a CSV file</h2>
-          <p className="mt-2 max-w-2xl leading-7 text-muted-foreground">The file may contain up to 5,000 rows and must be no larger than 5 MB. Existing question identifiers will be left unchanged.</p>
+          <p className="mt-2 max-w-2xl leading-7 text-muted-foreground">The file may contain up to 5,000 rows and must be no larger than 5 MB.</p>
+
+          <fieldset className="mt-6">
+            <legend className="font-display text-lg">How should existing identifiers be treated?</legend>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              {([
+                { value: "add", title: "Add new questions only", text: "Identifiers already in the bank are left exactly as they are." },
+                { value: "rewrite", title: "Add and rewrite matching ones", text: "Identifiers already in the bank are replaced by the version in this file." },
+              ] as const).map((option) => (
+                <label key={option.value} className={`cursor-pointer rounded-md border bg-card p-4 transition-colors ${mode === option.value ? "border-primary" : "border-border hover:border-input"}`}>
+                  <span className="flex items-start gap-3">
+                    <input type="radio" name="import-mode" value={option.value} checked={mode === option.value} onChange={() => setMode(option.value)} className="mt-1 accent-primary" />
+                    <span>
+                      <span className="block font-medium">{option.title}</span>
+                      <span className="mt-1 block text-sm text-muted-foreground">{option.text}</span>
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </div>
+            {mode === "rewrite" ? <p className="mt-3 text-sm text-muted-foreground">A rewritten question becomes available again for players who had already answered it.</p> : null}
+          </fieldset>
           <label className="mt-6 flex min-h-40 cursor-pointer flex-col items-center justify-center rounded-md border border-dashed border-input bg-card px-6 text-center transition-colors hover:border-primary" htmlFor="question-csv">
             <FileText className="mb-3 size-7 text-primary" aria-hidden="true" />
             <span className="font-medium">{fileName || "Select a CSV file"}</span>
@@ -254,11 +277,19 @@ function ImportSummary({ result }: { result: ImportResult }) {
       <p className="eyebrow">Upload complete</p>
       <h2 id="import-summary-title" className="mt-3 font-display text-3xl">Import summary</h2>
       <dl className="mt-6 grid gap-px overflow-hidden rounded-md border border-border bg-border sm:grid-cols-3">
-        {[["Added", result.added], ["Skipped as duplicates", result.skipped], ["Rejected as invalid", result.rejected.length]].map(([label, value]) => (
+        {[
+          ["Added", result.added] as const,
+          result.mode === "rewrite"
+            ? (["Rewritten", result.rewritten] as const)
+            : (["Skipped as duplicates", result.skipped] as const),
+          ["Rejected as invalid", result.rejected.length] as const,
+        ].map(([label, value]) => (
           <div key={label} className="bg-card p-5"><dt className="text-sm text-muted-foreground">{label}</dt><dd className="mt-1 font-display text-3xl">{value}</dd></div>
         ))}
       </dl>
-      {result.duplicateIds.length > 0 ? <div className="mt-8"><h3 className="font-display text-xl">Skipped identifiers</h3><ul className="mt-3 grid gap-2 font-mono text-sm sm:grid-cols-2">{result.duplicateIds.map((id) => <li key={id} className="rounded-md border border-border bg-card px-3 py-2">{id}</li>)}</ul></div> : null}
+      {result.mode === "rewrite" && result.skipped > 0 ? <p className="mt-4 text-sm text-muted-foreground">{result.skipped.toLocaleString()} rows repeated an identifier already used earlier in the same file, so only the first of each was written.</p> : null}
+      {result.rewrittenIds.length > 0 ? <div className="mt-8"><h3 className="font-display text-xl">Rewritten identifiers</h3><ul className="mt-3 grid gap-2 font-mono text-sm sm:grid-cols-2">{result.rewrittenIds.map((id) => <li key={id} className="rounded-md border border-border bg-card px-3 py-2">{id}</li>)}</ul></div> : null}
+      {result.duplicateIds.length > 0 ? <div className="mt-8"><h3 className="font-display text-xl">{result.mode === "rewrite" ? "Repeated identifiers" : "Skipped identifiers"}</h3><ul className="mt-3 grid gap-2 font-mono text-sm sm:grid-cols-2">{result.duplicateIds.map((id) => <li key={id} className="rounded-md border border-border bg-card px-3 py-2">{id}</li>)}</ul></div> : null}
       {result.rejected.length > 0 ? <div className="mt-8"><h3 className="font-display text-xl">Rejected rows</h3><ol className="mt-3 space-y-2">{result.rejected.map((item, index) => <li key={`${item.rowNumber}-${index}`} className="rounded-md border border-border bg-card px-4 py-3"><strong>Row {item.rowNumber || "unknown"}</strong><p className="mt-1 text-sm text-muted-foreground">{item.reasons.join("; ")}</p></li>)}</ol></div> : null}
     </section>
   );
