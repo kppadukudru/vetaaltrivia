@@ -35,7 +35,12 @@ export const getCategoryCatalog = createServerFn({ method: "GET" })
       const subcategories = rows
         .filter((row) => row.category === category)
         .map((row) => ({ name: row.subcategory, availableCount: Number(row.available_count) }))
-        .sort((left, right) => left.name.localeCompare(right.name));
+        .sort((left, right) => {
+          if (left.name === "Countries of the world") return -1;
+          if (right.name === "Countries of the world") return 1;
+          if (left.availableCount !== right.availableCount) return right.availableCount - left.availableCount;
+          return left.name.localeCompare(right.name);
+        });
 
       return {
         category,
