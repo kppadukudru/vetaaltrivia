@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   getAdminAccess,
   importQuestions,
+  type ImportMode,
   type ImportResult,
   type QuestionImportRow,
 } from "@/lib/admin.functions";
@@ -200,7 +201,7 @@ function ImportWorkspace({ onSignedOut }: { onSignedOut: () => void }) {
     setBusy(true);
     setFileError("");
     try {
-      setResult(await importQuestions({ data: { rows } }));
+      setResult(await importQuestions({ data: { rows, mode } }));
       clearSelection(false);
     } catch (error) {
       setFileError(error instanceof Error ? error.message : "The questions could not be imported.");
