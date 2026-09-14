@@ -219,7 +219,7 @@ export const importQuestions = createServerFn({ method: "POST" })
 
     const addedIds = new Set<string>();
     for (let index = 0; index < candidates.length; index += 500) {
-      const { data: inserted, error } = await context.supabase
+      const { data: inserted, error } = await supabaseAdmin
         .from("questions")
         .upsert(payloadFor(candidates.slice(index, index + 500)), {
           onConflict: "question_id",
