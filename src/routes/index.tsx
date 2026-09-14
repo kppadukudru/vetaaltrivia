@@ -19,7 +19,7 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
-      { rel: "preload", as: "image", href: spirit640, imageSrcSet: `${spirit320} 320w, ${spirit640} 640w`, imageSizes: "(min-width: 1024px) 320px, 256px", fetchpriority: "high" },
+      { rel: "preload", as: "image", href: spirit640, imageSrcSet: `${spirit320} 320w, ${spirit640} 640w`, imageSizes: "(min-width: 1024px) 320px, 256px", fetchPriority: "high" },
     ],
   }),
   component: Index,
