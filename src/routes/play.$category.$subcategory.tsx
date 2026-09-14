@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Check, House, Layers3, RotateCcw, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ensureAnonymousSession } from "@/lib/anonymous-session";
-import { answerQuestion, getCategoryCatalog, startQuestionSet, type AnswerReveal, type QuizQuestion } from "@/lib/quiz.functions";
+import { catalogQueryKey } from "@/lib/quiz-queries";
+import { answerQuestion, startQuestionSet, type AnswerReveal, type QuizQuestion } from "@/lib/quiz.functions";
 
 type Letter = "A" | "B" | "C" | "D";
 type RoundItem = { question: QuizQuestion; selected: Letter; reveal: AnswerReveal };
