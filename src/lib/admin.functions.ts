@@ -197,7 +197,6 @@ export const importQuestions = createServerFn({ method: "POST" })
 
       const rewrittenIds = [...existingIds].sort();
       if (rewrittenIds.length > 0) {
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         for (let index = 0; index < rewrittenIds.length; index += 500) {
           const { error } = await supabaseAdmin
             .from("question_progress")
