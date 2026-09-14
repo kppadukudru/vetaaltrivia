@@ -1,7 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Database } from "@/integrations/supabase/types";
 
 const answerSchema = z.enum(["A", "B", "C", "D"]);
 
@@ -39,9 +41,11 @@ export type ImportResult = {
 };
 
 async function requireAdministrator(
-  context: Parameters<Parameters<typeof requireSupabaseAuth>["options"]["server"]>[0] extends never
-    ? never
-    : { supabase: any; userId: string; claims: Record<string, unknown> },
+  context: {
+    supabase: SupabaseClient<Database>;
+    userId: string;
+    claims: { is_anonymous?: boolean };
+  },
 ) {
   if (context.claims.is_anonymous === true) throw new Error("Administrator access is required.");
 
