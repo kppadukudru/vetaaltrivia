@@ -24,9 +24,12 @@ const importRowSchema = z.object({
 
 const importPayloadSchema = z.object({
   rows: z.array(z.unknown()).max(5000),
+  mode: z.enum(["add", "rewrite"]).default("add"),
 });
 
 export type QuestionImportRow = z.infer<typeof importRowSchema>;
+
+export type ImportMode = "add" | "rewrite";
 
 export type ImportRejection = {
   rowNumber: number;
@@ -34,10 +37,13 @@ export type ImportRejection = {
 };
 
 export type ImportResult = {
+  mode: ImportMode;
   added: number;
   skipped: number;
+  rewritten: number;
   rejected: ImportRejection[];
   duplicateIds: string[];
+  rewrittenIds: string[];
 };
 
 async function requireAdministrator(
