@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { FileText, LogIn, LogOut, Upload } from "lucide-react";
 import Papa from "papaparse";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -138,9 +138,9 @@ function ImportWorkspace({ onSignedOut }: { onSignedOut: () => void }) {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<ImportResult>();
 
-  function clearSelection() {
+  function clearSelection(clearResult = true) {
     setRows([]);
-    setResult(undefined);
+    if (clearResult) setResult(undefined);
     if (inputRef.current) inputRef.current.value = "";
   }
 
@@ -200,7 +200,7 @@ function ImportWorkspace({ onSignedOut }: { onSignedOut: () => void }) {
     setFileError("");
     try {
       setResult(await importQuestions({ data: { rows } }));
-      clearSelection();
+      clearSelection(false);
     } catch (error) {
       setFileError(error instanceof Error ? error.message : "The questions could not be imported.");
     } finally {
@@ -261,6 +261,6 @@ function ImportSummary({ result }: { result: ImportResult }) {
   );
 }
 
-function AdminState({ title, text, children }: { title: string; text: string; children?: React.ReactNode }) {
+function AdminState({ title, text, children }: { title: string; text: string; children?: ReactNode }) {
   return <main className="page-shell flex min-h-[65vh] items-center"><div className="mx-auto max-w-xl text-center"><p className="eyebrow">Vetaal administration</p><h1 className="mt-3 font-display text-4xl">{title}</h1><p className="mt-4 text-muted-foreground">{text}</p>{children ? <div className="mt-7">{children}</div> : null}</div></main>;
 }
