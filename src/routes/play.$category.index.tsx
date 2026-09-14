@@ -1,12 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { ensureAnonymousSession } from "@/lib/anonymous-session";
-import { getCategoryCatalog } from "@/lib/quiz.functions";
-
-type Subcategory = { name: string; availableCount: number };
+import { catalogQueryOptions } from "@/lib/quiz-queries";
 
 export const Route = createFileRoute("/play/$category/")({
   head: ({ params }) => ({
@@ -26,46 +24,28 @@ function CategoryPage() {
   const { category: encodedCategory } = Route.useParams();
   const category = decodeURIComponent(encodedCategory);
   const navigate = useNavigate();
-  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
-  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+  const catalog = useQuery(catalogQueryOptions);
+
+  const match = catalog.data?.find((item) => item.category === category);
+  const subcategories = match?.subcategories ?? [];
+  const onlySubcategory = subcategories.length === 1 ? subcategories[0] : undefined;
 
   useEffect(() => {
-    let active = true;
-    async function load() {
-      try {
-        await ensureAnonymousSession();
-        const catalog = await getCategoryCatalog();
-        if (!active) return;
-        const match = catalog.find((item) => item.category === category);
-        if (!match || match.subcategories.length === 0) {
-          setStatus("error");
-          return;
-        }
-        if (match.subcategories.length === 1) {
-          const onlySubcategory = match.subcategories[0];
-          if (!onlySubcategory) {
-            setStatus("error");
-            return;
-          }
-          await navigate({
-            to: "/play/$category/$subcategory",
-            params: { category, subcategory: onlySubcategory.name },
-            replace: true,
-          });
-          return;
-        }
-        setSubcategories(match.subcategories);
-        setStatus("ready");
-      } catch {
-        if (active) setStatus("error");
-      }
-    }
-    load();
-    return () => { active = false; };
-  }, [category, navigate]);
+    if (!onlySubcategory) return;
+    void navigate({
+      to: "/play/$category/$subcategory",
+      params: { category, subcategory: onlySubcategory.name },
+      replace: true,
+    });
+  }, [category, navigate, onlySubcategory]);
 
-  if (status === "loading") return <CategoryState title="Finding your subjects" text="Your choices are taking shape." />;
-  if (status === "error") return <CategoryState title="The trail went quiet" text="This category could not be opened. Please return home and try once more." />;
+  if (catalog.isPending || onlySubcategory) {
+    return <CategoryState title="Finding your subjects" text="Your choices are taking shape." />;
+  }
+
+  if (catalog.isError || !match || subcategories.length === 0) {
+    return <CategoryState title="The trail went quiet" text="This category could not be opened. Please return home and try once more." />;
+  }
 
   return (
     <main className="page-shell py-12 sm:py-18">

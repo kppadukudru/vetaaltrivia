@@ -1,12 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Globe2, Landmark, LockKeyhole } from "lucide-react";
-import { useEffect, useState } from "react";
 
 import spirit from "@/assets/vetaal-spirit.png";
 import { Button } from "@/components/ui/button";
-import { ensureAnonymousSession } from "@/lib/anonymous-session";
-import { getCategoryCatalog } from "@/lib/quiz.functions";
+import { catalogQueryOptions } from "@/lib/quiz-queries";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -23,17 +22,9 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const [counts, setCounts] = useState<Record<string, number>>({});
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    ensureAnonymousSession()
-      .then(() => getCategoryCatalog())
-      .then((result) => { if (active) setCounts(Object.fromEntries(result.map((item) => [item.category, item.availableCount]))); })
-      .finally(() => { if (active) setReady(true); });
-    return () => { active = false; };
-  }, []);
+  const catalog = useQuery(catalogQueryOptions);
+  const counts = Object.fromEntries((catalog.data ?? []).map((item) => [item.category, item.availableCount]));
+  const ready = catalog.isSuccess;
 
   const categories = [
     { name: "Capitals", note: "Cities chosen by history, compromise, and sometimes stubbornness.", icon: Landmark },
