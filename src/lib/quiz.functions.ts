@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const categorySchema = z.enum(["Capitals", "Geography"]);
+const categorySchema = z.string().trim().min(1);
 const answerSchema = z.enum(["A", "B", "C", "D"]);
 
 export type QuizQuestion = {
