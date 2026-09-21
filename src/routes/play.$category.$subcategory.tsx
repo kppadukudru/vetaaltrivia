@@ -36,7 +36,7 @@ function PlayPage() {
   const [round, setRound] = useState<RoundItem[]>([]);
   const [status, setStatus] = useState<"loading" | "playing" | "summary" | "empty" | "error">("loading");
   const [submitting, setSubmitting] = useState(false);
-  const validCategory = category === "Capitals" || category === "Geography";
+  const validCategory = category.trim().length > 0;
   const queryClient = useQueryClient();
 
   useEffect(() => {

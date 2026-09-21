@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Globe2, Landmark, LockKeyhole, Shuffle } from "lucide-react";
+import { ArrowRight, BookOpen, Globe2, Landmark, LockKeyhole, Shuffle } from "lucide-react";
 
 import spirit320 from "@/assets/vetaal-spirit-320.webp";
 import spirit640 from "@/assets/vetaal-spirit-640.webp";
@@ -27,7 +27,6 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const catalog = useQuery(catalogQueryOptions);
-  const counts = Object.fromEntries((catalog.data ?? []).map((item) => [item.category, item.availableCount]));
   const ready = catalog.isSuccess;
   const selectionAvailable = (catalog.data ?? []).reduce((total, item) => {
     if (item.category === "Geography") return total + item.availableCount;
@@ -36,10 +35,16 @@ function Index() {
   }, 0);
   const selectionDisabled = ready && selectionAvailable === 0;
 
-  const categories = [
-    { name: "Capitals", note: "Cities chosen by history, compromise, and sometimes stubbornness.", icon: Landmark },
-    { name: "Geography", note: "The deep, high, broad, and unexpected facts of the world.", icon: Globe2 },
-  ];
+  const categoryPresentation: Record<string, { note: string; icon: typeof Landmark }> = {
+    Capitals: { note: "Cities chosen by history, compromise, and sometimes stubbornness.", icon: Landmark },
+    Geography: { note: "The deep, high, broad, and unexpected facts of the world.", icon: Globe2 },
+  };
+  const categories = (catalog.data ?? []).map((item) => ({
+    name: item.category,
+    available: item.availableCount,
+    note: categoryPresentation[item.category]?.note ?? null,
+    icon: categoryPresentation[item.category]?.icon ?? BookOpen,
+  }));
 
   return (
     <main>
@@ -79,13 +84,12 @@ function Index() {
             </Button>
           </article>
           <div className="grid gap-4 md:grid-cols-2">
-            {categories.map(({ name, note, icon: Icon }) => {
-              const available = counts[name];
+            {categories.map(({ name, available, note, icon: Icon }) => {
               const disabled = ready && available === 0;
               return (
                 <article className="category-card" key={name}>
                   <div className="category-icon"><Icon /></div>
-                  <div className="min-w-0"><h3 className="font-display text-2xl">{name}</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">{note}</p><p className="mt-5 flex h-4 items-center font-mono text-xs uppercase text-muted-foreground">{ready ? `${available ?? 0} available` : "Checking your progress"}</p></div>
+                  <div className="min-w-0"><h3 className="font-display text-2xl">{name}</h3>{note ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{note}</p> : null}<p className="mt-5 flex h-4 items-center font-mono text-xs uppercase text-muted-foreground">{ready ? `${available} available` : "Checking your progress"}</p></div>
                   <Button asChild={!disabled} variant="ghost" size="icon" disabled={disabled} aria-label={`Start ${name}`}>
                     {disabled ? <ArrowRight /> : <Link to="/play/$category" params={{ category: name }} preload="intent"><ArrowRight /></Link>}
                   </Button>
