@@ -29,9 +29,10 @@ function Index() {
   const catalog = useQuery(catalogQueryOptions);
   const ready = catalog.isSuccess;
   const selectionAvailable = (catalog.data ?? []).reduce((total, item) => {
-    if (item.category === "Geography") return total + item.availableCount;
-    const worldCapitals = item.subcategories.find((entry) => entry.name === "Countries of the world");
-    return total + (worldCapitals?.availableCount ?? 0);
+    const eligible = item.subcategories.filter(
+      (entry) => item.category !== "Capitals" || entry.name === "Countries of the world",
+    );
+    return total + eligible.reduce((sum, entry) => sum + entry.availableCount, 0);
   }, 0);
   const selectionDisabled = ready && selectionAvailable === 0;
 
