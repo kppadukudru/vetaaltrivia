@@ -134,6 +134,19 @@ export type Database = {
           subcategory: string
         }[]
       }
+      pick_mixed_question_set: {
+        Args: { _limit: number; _user_id: string }
+        Returns: {
+          category: string
+          option_a: string
+          option_b: string
+          option_c: string
+          option_d: string
+          question: string
+          question_id: string
+          subcategory: string
+        }[]
+      }
       pick_question_set: {
         Args: {
           _category: string
