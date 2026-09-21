@@ -27,7 +27,6 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const catalog = useQuery(catalogQueryOptions);
-  const counts = Object.fromEntries((catalog.data ?? []).map((item) => [item.category, item.availableCount]));
   const ready = catalog.isSuccess;
   const selectionAvailable = (catalog.data ?? []).reduce((total, item) => {
     if (item.category === "Geography") return total + item.availableCount;
@@ -36,10 +35,16 @@ function Index() {
   }, 0);
   const selectionDisabled = ready && selectionAvailable === 0;
 
-  const categories = [
-    { name: "Capitals", note: "Cities chosen by history, compromise, and sometimes stubbornness.", icon: Landmark },
-    { name: "Geography", note: "The deep, high, broad, and unexpected facts of the world.", icon: Globe2 },
-  ];
+  const categoryPresentation: Record<string, { note: string; icon: typeof Landmark }> = {
+    Capitals: { note: "Cities chosen by history, compromise, and sometimes stubbornness.", icon: Landmark },
+    Geography: { note: "The deep, high, broad, and unexpected facts of the world.", icon: Globe2 },
+  };
+  const categories = (catalog.data ?? []).map((item) => ({
+    name: item.category,
+    available: item.availableCount,
+    note: categoryPresentation[item.category]?.note ?? null,
+    icon: categoryPresentation[item.category]?.icon ?? BookOpen,
+  }));
 
   return (
     <main>
