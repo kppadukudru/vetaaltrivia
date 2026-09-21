@@ -15,9 +15,9 @@ export const Route = createFileRoute("/play/selection")({
   head: () => ({
     meta: [
       { title: "Vetaal's Selection | A Mixed Quiz Set" },
-      { name: "description", content: "Ten questions drawn at random from world capitals and physical geography, untimed and explained." },
+      { name: "description", content: "Ten questions drawn across every subject group in the collection, untimed and explained." },
       { property: "og:title", content: "Vetaal's Selection | A Mixed Quiz Set" },
-      { property: "og:description", content: "A random ten from the wider world. No timer, no advertising, and no pressure." },
+      { property: "og:description", content: "A balanced ten from across the collection. No timer, no advertising, and no pressure." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
