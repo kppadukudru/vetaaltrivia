@@ -61,6 +61,17 @@ function Index() {
       <section className="border-t border-border/70 bg-surface-subtle">
         <div className="mx-auto max-w-6xl px-5 py-12 sm:px-8 sm:py-16">
           <div className="mb-7 flex items-end justify-between gap-5"><div><p className="eyebrow">Choose a path</p><h2 className="mt-2 font-display text-3xl">Begin a set</h2></div><p className="hidden text-sm text-muted-foreground sm:block">Up to 10 questions</p></div>
+          <article className="category-card mb-4">
+            <div className="category-icon"><Shuffle /></div>
+            <div className="min-w-0">
+              <h3 className="font-display text-2xl">Vetaal&rsquo;s Selection</h3>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">Ten questions drawn at random from the capitals of the world and physical geography.</p>
+              <p className="mt-5 flex h-4 items-center font-mono text-xs uppercase text-muted-foreground">{ready ? `${selectionAvailable} available` : "Checking your progress"}</p>
+            </div>
+            <Button asChild={!selectionDisabled} variant="ghost" size="icon" disabled={selectionDisabled} aria-label="Start Vetaal's Selection">
+              {selectionDisabled ? <ArrowRight /> : <Link to="/play/selection" preload="intent"><ArrowRight /></Link>}
+            </Button>
+          </article>
           <div className="grid gap-4 md:grid-cols-2">
             {categories.map(({ name, note, icon: Icon }) => {
               const available = counts[name];
