@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Globe2, Landmark, LockKeyhole } from "lucide-react";
+import { ArrowRight, Globe2, Landmark, LockKeyhole, Shuffle } from "lucide-react";
 
 import spirit320 from "@/assets/vetaal-spirit-320.webp";
 import spirit640 from "@/assets/vetaal-spirit-640.webp";
@@ -29,6 +29,12 @@ function Index() {
   const catalog = useQuery(catalogQueryOptions);
   const counts = Object.fromEntries((catalog.data ?? []).map((item) => [item.category, item.availableCount]));
   const ready = catalog.isSuccess;
+  const selectionAvailable = (catalog.data ?? []).reduce((total, item) => {
+    if (item.category === "Geography") return total + item.availableCount;
+    const worldCapitals = item.subcategories.find((entry) => entry.name === "Countries of the world");
+    return total + (worldCapitals?.availableCount ?? 0);
+  }, 0);
+  const selectionDisabled = ready && selectionAvailable === 0;
 
   const categories = [
     { name: "Capitals", note: "Cities chosen by history, compromise, and sometimes stubbornness.", icon: Landmark },
