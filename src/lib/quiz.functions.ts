@@ -31,7 +31,19 @@ export const getCategoryCatalog = createServerFn({ method: "GET" })
     if (error) throw error;
 
     const rows = data ?? [];
-    return ["Capitals", "Geography"].map((category) => {
+    const categoryNames = Array.from(new Set(rows.map((row) => row.category as string)));
+    const ordered = categoryNames.sort((left, right) => {
+      const pinned = (name: string) => (name === "Capitals" ? 0 : name === "Geography" ? 1 : 2);
+      const pinDelta = pinned(left) - pinned(right);
+      if (pinDelta !== 0) return pinDelta;
+      const totalFor = (name: string) =>
+        rows.filter((row) => row.category === name).reduce((total, row) => total + Number(row.available_count), 0);
+      const countDelta = totalFor(right) - totalFor(left);
+      if (countDelta !== 0) return countDelta;
+      return left.localeCompare(right);
+    });
+
+    return ordered.map((category) => {
       const subcategories = rows
         .filter((row) => row.category === category)
         .map((row) => ({ name: row.subcategory, availableCount: Number(row.available_count) }))
