@@ -96,6 +96,38 @@ export const startQuestionSet = createServerFn({ method: "POST" })
     }));
   });
 
+export const startSelectionSet = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: selected, error } = await supabaseAdmin.rpc("pick_mixed_question_set", {
+      _user_id: context.userId,
+      _limit: 10,
+    });
+    if (error) throw error;
+
+    const rows = selected ?? [];
+    if (rows.length > 0) {
+      const { error: markError } = await supabaseAdmin.from("question_progress").upsert(
+        rows.map((question) => ({
+          user_id: context.userId,
+          question_id: question.question_id,
+          state: "shown_unanswered" as const,
+        })),
+        { onConflict: "user_id,question_id" },
+      );
+      if (markError) throw markError;
+    }
+
+    return rows.map<QuizQuestion>((item) => ({
+      questionId: item.question_id,
+      category: item.category,
+      subcategory: item.subcategory,
+      question: item.question,
+      options: { A: item.option_a, B: item.option_b, C: item.option_c, D: item.option_d },
+    }));
+  });
+
 export const answerQuestion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((data) =>
