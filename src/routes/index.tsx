@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Globe2, Landmark, LockKeyhole, Shuffle } from "lucide-react";
+import { ArrowRight, BookOpen, Globe2, Landmark, LockKeyhole, Shuffle } from "lucide-react";
 
 import spirit320 from "@/assets/vetaal-spirit-320.webp";
 import spirit640 from "@/assets/vetaal-spirit-640.webp";
