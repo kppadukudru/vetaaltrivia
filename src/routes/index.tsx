@@ -77,7 +77,7 @@ function Index() {
             <div className="category-icon"><Shuffle /></div>
             <div className="min-w-0">
               <h3 className="font-display text-2xl">Vetaal&rsquo;s Selection</h3>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">Ten questions drawn at random from the capitals of the world and physical geography.</p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">Ten questions drawn across the whole collection, with at least one from every subject group. Regional capitals stay in their own lists.</p>
               <p className="mt-5 flex h-4 items-center font-mono text-xs uppercase text-muted-foreground">{ready ? `${selectionAvailable} available` : "Checking your progress"}</p>
             </div>
             <Button asChild={!selectionDisabled} variant="ghost" size="icon" disabled={selectionDisabled} aria-label="Start Vetaal's Selection">
