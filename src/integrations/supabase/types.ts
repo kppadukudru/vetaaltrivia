@@ -60,6 +60,7 @@ export type Database = {
           option_d: string
           question: string
           question_id: string
+          random_rank: number
           subcategory: string
           updated_at: string
         }
@@ -76,6 +77,7 @@ export type Database = {
           option_d: string
           question: string
           question_id: string
+          random_rank?: number
           subcategory: string
           updated_at?: string
         }
@@ -92,6 +94,7 @@ export type Database = {
           option_d?: string
           question?: string
           question_id?: string
+          random_rank?: number
           subcategory?: string
           updated_at?: string
         }
