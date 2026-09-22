@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, BookOpen, Globe2, Landmark, LockKeyhole, Shuffle } from "lucide-react";
+import { ArrowRight, BookOpen, Globe2, Hourglass, Landmark, LockKeyhole, Shuffle } from "lucide-react";
 
 import spirit320 from "@/assets/vetaal-spirit-320.webp";
 import spirit640 from "@/assets/vetaal-spirit-640.webp";
@@ -39,6 +39,7 @@ function Index() {
   const categoryPresentation: Record<string, { note: string; icon: typeof Landmark }> = {
     Capitals: { note: "Cities chosen by history, compromise, and sometimes stubbornness.", icon: Landmark },
     Geography: { note: "The deep, high, broad, and unexpected facts of the world.", icon: Globe2 },
+    History: { note: "The people, empires, and defining moments of the ancient world onward.", icon: Hourglass },
   };
   const categories = (catalog.data ?? []).map((item) => ({
     name: item.category,
