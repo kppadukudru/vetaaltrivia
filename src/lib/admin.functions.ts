@@ -75,6 +75,7 @@ export const getAdminAccess = createServerFn({ method: "GET" })
 const firstAdminSchema = z.object({
   email: z.string().trim().email("Enter a valid email address."),
   password: z.string().min(10, "Choose a password of at least ten characters."),
+  setupCode: z.string().trim().min(1, "Enter the setup code."),
 });
 
 export const adminExists = createServerFn({ method: "GET" }).handler(async () => {
@@ -91,6 +92,11 @@ export const adminExists = createServerFn({ method: "GET" }).handler(async () =>
 export const claimFirstAdmin = createServerFn({ method: "POST" })
   .validator((input) => firstAdminSchema.parse(input))
   .handler(async ({ data }) => {
+    const expectedCode = process.env["ADMIN_SETUP_CODE"];
+    if (!expectedCode || data.setupCode !== expectedCode) {
+      throw new Error("The setup code was not accepted.");
+    }
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { count, error: countError } = await supabaseAdmin

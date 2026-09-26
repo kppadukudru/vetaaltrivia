@@ -142,6 +142,7 @@ function SignInForm({ onSignedIn }: { onSignedIn: () => Promise<void> }) {
 function FirstAdminForm({ onCreated }: { onCreated: () => Promise<void> }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [setupCode, setSetupCode] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -150,7 +151,7 @@ function FirstAdminForm({ onCreated }: { onCreated: () => Promise<void> }) {
     setBusy(true);
     setMessage("");
     try {
-      await claimFirstAdmin({ data: { email: email.trim(), password } });
+      await claimFirstAdmin({ data: { email: email.trim(), password, setupCode: setupCode.trim() } });
       const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (error) {
         setMessage("The account was created. Sign in with it to continue.");
@@ -160,7 +161,7 @@ function FirstAdminForm({ onCreated }: { onCreated: () => Promise<void> }) {
       }
       await onCreated();
     } catch {
-      setMessage("The account could not be created. Check the email address, choose a password of at least ten characters, and try again.");
+      setMessage("The account could not be created. Check the setup code, the email address, and a password of at least ten characters, then try again.");
     }
     setBusy(false);
   }
@@ -168,11 +169,12 @@ function FirstAdminForm({ onCreated }: { onCreated: () => Promise<void> }) {
   return (
     <Shell title="Create the administrator account">
       <p className="mt-4 leading-7 text-muted-foreground">
-        No administrator exists yet, so you may claim the role once. Choose an email address and a password of at least ten characters. This form disappears as soon as the account is made.
+        No administrator exists yet, so the role may be claimed once by the person who holds the setup code. Choose an email address and a password of at least ten characters. This form disappears as soon as the account is made.
       </p>
       <form className="mt-8 space-y-5" onSubmit={submit}>
         <Field id="setup-email" label="Email address" type="email" autoComplete="username" value={email} onChange={setEmail} />
         <Field id="setup-password" label="Password" type="password" autoComplete="new-password" value={password} onChange={setPassword} />
+        <Field id="setup-code" label="Setup code" type="password" autoComplete="off" value={setupCode} onChange={setSetupCode} />
         {message ? <p role="alert" className="text-sm text-destructive">{message}</p> : null}
         <Button type="submit" size="lg" className="w-full" disabled={busy}>
           <KeyRound /> {busy ? "Creating the account" : "Create the administrator account"}
